@@ -40,6 +40,7 @@
               type="text"
               placeholder="First Name"
               v-model="userData.firstName"
+              required
             />
           </label>
           <label class="skiller_type_last_name mb20">
@@ -47,10 +48,16 @@
               type="text"
               placeholder="Last Name"
               v-model="userData.lastName"
+              required
             />
           </label>
           <label class="skiller_type_phone mb20">
-            <input type="text" placeholder="Phone" v-model="userData.phone" />
+            <input
+              type="text"
+              placeholder="Phone"
+              v-model="userData.phone"
+              required
+            />
           </label>
           <label class="skiller_type_mail mb20">
             <input
@@ -59,9 +66,12 @@
               v-model="userData.email"
               @blur="emailValidation()"
               @focus="removeError()"
+              required
             />
           </label>
-          <p v-if="userData.errorMessage" style="color:red">{{ userData.msg }}</p>
+          <p v-if="userData.errorMessage" style="color: red">
+            {{ userData.msg }}
+          </p>
 
           <label class="skiller_select_country mb20">
             <!-- <input type="text" placeholder="Country">
@@ -69,12 +79,14 @@
                         <path id="Arrow" d="M15.25,9.088,10.77,5.251a1.1,1.1,0,0,0-1.346.03.753.753,0,0,0-.032,1.153l4.477,3.837a.755.755,0,0,1,0,1.183L9.393,15.291a.755.755,0,0,0,0,1.184,1.1,1.1,0,0,0,1.381,0l4.476-3.837A2.265,2.265,0,0,0,15.25,9.088Z" transform="translate(16.72 -9.107) rotate(90)" fill="#1e272e" opacity="0.5"/>
                       </svg>
                        -->
-            <select class="skiller_dropdown">
+            <select class="skiller_dropdown" @change="selectCountry($event)">
               <option
                 v-for="country in countryLists"
                 :key="country.id"
-                value="country.id"
+                :value="country.id"
+                selected
               >
+                Country:
                 {{ country.name }}
               </option>
             </select>
@@ -82,16 +94,17 @@
 
           <label class="skiller_type_pass mb10">
             <input
-              type="password"
+              :type="userData.passwordType"
               placeholder="Password"
               v-model="userData.password"
-            
+              required
             />
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="16"
               height="12.457"
               viewBox="0 0 16 12.457"
+              @click="showPassword()"
             >
               <path
                 id="Eye"
@@ -101,19 +114,21 @@
               />
             </svg>
           </label>
-          
+
           <label class="skiller_type_pass mb10">
             <input
-              type="password"
+              :type="userData.recheckPasswordType"
               placeholder="Password"
               v-model="userData.checkPassword"
               @blur="passwordCheck()"
+              required
             />
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="16"
               height="12.457"
               viewBox="0 0 16 12.457"
+              @click="showRecheckPassword()"
             >
               <path
                 id="Eye"
@@ -123,14 +138,22 @@
               />
             </svg>
           </label>
-          <p v-if="userData.passwordError" style="color:red">{{userData.passwordMessage}}</p>
+          <p v-if="userData.passwordError" style="color: red">
+            {{ userData.passwordMessage }}
+          </p>
           <div class="check_policy pb20">
-            <input type="checkbox" /><span>
+            <input type="checkbox" v-model="acceptAgreement" /><span
+              >
+              <!-- {{ acceptAgreement }} -->
+              <p v-if="errors.checkAgreement" style="color: red">
+                Please accept our terms and conditions
+              </p>
               I agree to the skiller <a href="#"> User agreement </a> and
               <a href="#">privacy policy</a>
             </span>
           </div>
-          <a href="#" class="sign_in_btn mb30"> Sign In </a>
+          <!-- <a href="#" class="sign_in_btn mb30"> Sign In </a> -->
+          <button class="sign_in_btn mb30">Sign Up</button>
         </form>
         <div class="skiller_sign_in_bottom pt20 txt_center">
           <p>
@@ -153,26 +176,34 @@ export default {
         lastName: "",
         phone: "",
         email: "",
+        countryId: "",
         password: "",
         checkPassword: "",
         emailError: "",
         validEmail: "",
         errorMessage: false,
         msg: "",
-        passwordError:false,
-        passwordMessage:''
+        passwordError: false,
+        passwordMessage: "",
+        passwordType: "password",
+        recheckPasswordType: "password",
+        
+
         // hasPassword:false
       },
+      acceptAgreement:'',
+      errors: {
+        // acceptAgreement: false,
+        checkAgreement: false,
+      },
       countryLists: [],
+      selectCountry(e) {
+        this.countryId = e.target.value;
+      },
     };
   },
   methods: {
-    //   Form Submitted 
-    submitRegister() {
-      console.log("Form submitted");
-    },
-
-    // Email Validation 
+    // Email Validation
     emailValidation() {
       if (this.userData.email.length != 0) {
         this.userData.email = this.userData.email.trim();
@@ -189,24 +220,74 @@ export default {
         }
       }
     },
-    // Remove Error on Email validation 
-    removeError(){
-        this.userData.errorMessage= false;
-        // this.userData.msg=""
+    // Remove Error on Email validation
+    removeError() {
+      this.userData.errorMessage = false;
+      // this.userData.msg=""
     },
 
-    // Password Validation 
-    passwordCheck(){
-        if(this.userData.password !== this.userData.checkPassword){
+    // Password Validation
+    passwordCheck() {
+      if (this.userData.password !== this.userData.checkPassword) {
+        this.userData.passwordError = true;
+        this.userData.passwordMessage = "Password didn't match";
+      } else {
+        this.userData.passwordError = false;
+      }
+    },
+
+    // Show Password
+    showPassword() {
+      if (this.userData.passwordType === "password") {
+        this.userData.passwordType = "text";
+      } else {
+        this.userData.passwordType = "password";
+      }
+    },
+
+    // Show RecheckPassword
+    showRecheckPassword() {
+      if (this.userData.recheckPasswordType === "password") {
+        this.userData.recheckPasswordType = "text";
+      } else {
+        this.userData.recheckPasswordType = "password";
+      }
+    },
+
+    // Handle Registration
+    submitRegister() {
+      console.log("submit Registration");
+      // console.log("First Name", this.userData.firstName)
+      // console.log("Last Name", this.userData.lastName)
+      // console.log("Email", this.userData.email)
+      // if (this.erros.acceptAgreement ) {
+      if (this.acceptAgreement ) {
+        this.errors.checkAgreement = false;
+        if(this.userData.password.length > 0 && this.userData.password.length > 0) {
+          if(this.userData.password !== this.userData.checkPassword){
+            console.log("password didn't match")
             this.userData.passwordError = true;
-            this.userData.passwordMessage = "Password didn't match"
-
+            this.userData.passwordMessage = "Password didn't match";
+          }else{
+            console.log("We shall send data",this.userData);
+             this.$store.dispatch('register/userRegister',this.userData);
+          }
+        }else{
+          console.log("Enter Password");
+        this.userData.passwordError = true;
+        this.userData.passwordMessage = "You need to enter both password fields";
         }
-        else{
-            this.userData.passwordError = false;
-        }
-    }
 
+        // if ((this.userData.password.length >0 && this.userData.checkPassword.length > 0) && (this.userData.password === this.userData.checkPassword)) {
+        //   console.log("We can do it");
+        // } else {
+        //   console.log("invalid password")
+
+        // }
+      } else {
+        this.errors.checkAgreement = true;
+      }
+    },
   },
   mounted() {
     axios.get("http://192.168.0.132:8080/api/v1/country").then((res) => {
